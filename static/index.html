@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Blind Screening</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Lora:ital@0;1&family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/style.css" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="https://a.ltrbxd.com/logos/letterboxd-decal-dots-pos-rgb.svg"
+    />
+  </head>
+  <body>
+    <div class="beam" aria-hidden="true"></div>
+
+    <main id="app">
+      <!-- HOME -->
+      <section id="screen-home" class="screen">
+        <header class="masthead">
+          <p class="eyebrow">now showing</p>
+          <h1>Blind<br />Screening</h1>
+          <p class="tagline">
+            Your friends' Letterboxd reviews, names redacted.<br />Guess who
+            wrote what.
+          </p>
+        </header>
+        <form class="card" onsubmit="return false;">
+          <label
+            >Your name
+            <input
+              id="in-name"
+              maxlength="20"
+              autocomplete="off"
+              placeholder="Chris Nolan"
+            />
+          </label>
+          <label
+            >Letterboxd username
+            <input
+              id="in-lb"
+              maxlength="40"
+              autocomplete="off"
+              placeholder="chrisnolan100"
+            />
+          </label>
+          <div class="row">
+            <button id="btn-create" class="primary" type="button">
+              Create room
+            </button>
+          </div>
+          <div class="join-row">
+            <input
+              id="in-code"
+              maxlength="4"
+              placeholder="CODE"
+              class="code-input"
+              autocomplete="off"
+            />
+            <button id="btn-join" type="button">Join</button>
+          </div>
+          <p id="home-error" class="error" role="alert"></p>
+        </form>
+      </section>
+
+      <!-- LOBBY -->
+      <section id="screen-lobby" class="screen hidden">
+        <p class="eyebrow">lobby</p>
+        <div class="room-code" id="lobby-code" title="Share this code"></div>
+        <ul id="lobby-players" class="player-list"></ul>
+        <div id="lobby-warnings" class="warnings"></div>
+        <button id="btn-start" class="primary hidden" type="button">
+          Start screening
+        </button>
+        <p id="lobby-wait" class="muted">Waiting for the host to start…</p>
+      </section>
+
+      <!-- LOADING -->
+      <section id="screen-loading" class="screen hidden">
+        <p class="eyebrow">threading the projector</p>
+        <div class="loader-reel" aria-hidden="true"></div>
+        <p id="loading-status" class="muted">Fetching reviews…</p>
+        <div id="loading-log" class="warnings"></div>
+      </section>
+
+      <!-- ROUND -->
+      <section id="screen-round" class="screen hidden">
+        <div class="round-top">
+          <span id="round-counter" class="eyebrow"></span>
+          <span id="round-timer" class="timer" aria-live="polite"></span>
+        </div>
+        <p class="film-title">
+          <span id="round-film"></span>
+          <span id="round-year" class="muted"></span>
+        </p>
+        <p id="round-shared" class="shared-tag"></p>
+
+        <figure class="screen-frame">
+          <blockquote id="round-review"></blockquote>
+        </figure>
+
+        <div class="hint-row">
+          <button id="btn-hint" type="button" class="ghost">
+            Reveal star rating
+          </button>
+          <span id="hint-rating" class="rating hidden"></span>
+        </div>
+
+        <p class="prompt">Who wrote this?</p>
+        <div id="vote-buttons" class="vote-grid"></div>
+        <p id="vote-status" class="muted"></p>
+      </section>
+
+      <!-- REVEAL -->
+      <section id="screen-reveal" class="screen hidden">
+        <p class="eyebrow">the credits roll</p>
+        <p class="reveal-line">
+          Written by <span id="reveal-author" class="author"></span>
+        </p>
+        <ul id="reveal-votes" class="reveal-votes"></ul>
+        <h2 class="board-title">Scoreboard</h2>
+        <ul id="reveal-scores" class="scoreboard"></ul>
+        <button id="btn-next" class="primary hidden" type="button">
+          Next review
+        </button>
+        <p id="reveal-wait" class="muted">Waiting for the host…</p>
+      </section>
+
+      <!-- GAME OVER -->
+      <section id="screen-over" class="screen hidden">
+        <p class="eyebrow">fin</p>
+        <h1 class="winner-line" id="winner-line"></h1>
+        <ul id="final-scores" class="scoreboard big"></ul>
+        <button id="btn-again" class="primary hidden" type="button">
+          Back to lobby
+        </button>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden" role="status"></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
