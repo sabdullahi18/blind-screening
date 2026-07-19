@@ -18,6 +18,7 @@ import json
 import time
 import asyncio
 import random
+import sys
 
 try:
     from curl_cffi.requests import AsyncSession
@@ -170,27 +171,41 @@ async def fetch_user_reviews(
     return reviews
 
 
+async def fetch_all(usernames: list[str], progress=None) -> dict[str, list[Review]]:
+    results: dict[str, list[Review]] = {}
+    done = 0
+    total = len(usernames)
+
+    async with AsyncSession(impersonate="chrome120") as client:
+
+        async def one(u: str):
+            nonlocal done
+            err = None
+            try:
+                results[u] = await fetch_user_reviews(client, u)
+            except ScrapeError as e:
+                results[u] = []
+                err = str(e)
+            except Exception as e:
+                results[u] = []
+                err = f"couldn't fetch reviews for {u}: {e}"
+            done += 1
+            if progress:
+                await progress(u, done, total, err)
+
+        await asyncio.gather(*(one(u) for u in usernames))
+
+    return results
+
+
 if __name__ == "__main__":
 
-    async def run_single_user_test():
-        test_user = "user"
-        print(f"Initialising test async session for user: {test_user}")
+    async def _main():
+        user = sys.argv[1]
+        data = await fetch_all([user])
+        for r in data[user]:
+            stars = f"{r.rating}★" if r.rating else "unrated"
+            print(f"— {r.film} ({r.year}) [{stars}]\n  {r.text[:120]}...\n")
+        print(f"{len(data[user])} reviews scraped for {user}")
 
-        async with AsyncSession(impersonate="chrome120") as client:
-            try:
-                reviews = await fetch_user_reviews(
-                    client, username=test_user, max_pages=2
-                )
-
-                print(f"\nTotal reviews captured: {len(reviews)}")
-                for idx, r in enumerate(reviews[:3], 1):
-                    stars = f"{r.rating}★" if r.rating else "unrated"
-                    print(f"\n[{idx}] {r.film} ({r.year}) - {stars}")
-                    print(f"    Text snippet: {r.text[:80]}...")
-
-            except ScrapeError as e:
-                print(f"ScrapeError caught: {e}")
-            except Exception as e:
-                print(f"Unexpected error during fetch: {e}")
-
-    asyncio.run(run_single_user_test())
+    asyncio.run(_main())
