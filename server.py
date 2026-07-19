@@ -7,9 +7,12 @@ from fastapi import WebSocket
 from game import Question, build_deck, score_round
 import asyncio
 import scraper
+import random
+import string
 
 MAX_ROUNDS = 10
 ROUND_SECONDS = 45
+ROOM_TTL_EMPTY = 600
 
 # --------------------------------------------------------------------------
 # Room / player state
@@ -204,3 +207,31 @@ class Room:
                 "players": [p.public() for p in ranked],
             }
         )
+
+    def maybe_reap(self):
+        """Delete the room 10 min after everyone disconnects."""
+        if any(p.connected for p in self.players.values()):
+            if self.reaper:
+                self.reaper.cancel()
+                self.reaper = None
+            return
+
+        async def reap():
+            try:
+                await asyncio.sleep(ROOM_TTL_EMPTY)
+                rooms.pop(self.code, None)
+            except asyncio.CancelledError:
+                pass
+
+        if not self.reaper:
+            self.reaper = asyncio.create_task(reap())
+
+
+rooms: dict[str, Room] = {}
+
+
+def new_room_code() -> str:
+    while True:
+        code = "".join(random.choices(string.ascii_uppercase, k=4))
+        if code not in rooms:
+            return code
